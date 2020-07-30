@@ -8,8 +8,15 @@
 
 import { helper } from '@ember/component/helper';
 
-
-import _ from 'lodash';
+import isEmpty from 'lodash/isEmpty';
+import _has from 'lodash/has';
+import some from 'lodash/some';
+import pick from 'lodash/pick';
+import includes from 'lodash/includes';
+import map from 'lodash/map';
+import get from 'lodash/get';
+import findIndex from 'lodash/findIndex';
+import filter from 'lodash/filter';
 
 const validAttrs = ['tag', 'author', 'slug', 'id', 'number', 'index', 'any', 'all'];
 
@@ -34,7 +41,7 @@ function evaluateTagList(expr, tags) {
     return expr.split(',').map(function (v) {
         return v.trim();
     }).reduce(function (p, c) {
-        return p || (_.findIndex(tags, function (item) {
+        return p || (findIndex(tags, function (item) {
             // Escape regex special characters
             item = item.replace(/[\-\/\\\^$*+?.()|\[\]{}]/g, '\\$&');
             item = new RegExp('^' + item + '$', 'i');
@@ -52,7 +59,7 @@ function handleTag(data, attrs) {
         return handleCount(attrs.tag, data.tags);
     }
 
-    return evaluateTagList(attrs.tag, _.map(data.tags, 'name')) || false;
+    return evaluateTagList(attrs.tag, map(data.tags, 'name')) || false;
 }
 
 function evaluateAuthorList(expr, authors) {
@@ -60,8 +67,8 @@ function evaluateAuthorList(expr, authors) {
         return v.trim().toLocaleLowerCase();
     });
 
-    return _.filter(authors, (author) => {
-        return _.includes(authorList, author.name.toLocaleLowerCase());
+    return filter(authors, (author) => {
+        return includes(authorList, author.name.toLocaleLowerCase());
     }).length;
 }
 
@@ -108,9 +115,9 @@ function evaluateList(type, expr, obj, data) {
         return prop.trim().toLocaleLowerCase();
     })[type](function (prop) {
         if (prop.match(/^@/)) {
-            return _.has(data, prop.replace(/@/, '')) && !_.isEmpty(_.get(data, prop.replace(/@/, '')));
+            return _has(data, prop.replace(/@/, '')) && !isEmpty(get(data, prop.replace(/@/, '')));
         } else {
-            return _.has(obj, prop) && !_.isEmpty(_.get(obj, prop));
+            return _has(obj, prop) && !isEmpty(get(obj, prop));
         }
     });
 }
@@ -121,8 +128,8 @@ export function has(params, hash) {
     options.data = options.data || {};
 
     var self = this,
-        attrs = _.pick(options.hash, validAttrs),
-        data = _.pick(options.data, ['blog', 'config', 'labs']),
+        attrs = pick(options.hash, validAttrs),
+        data = pick(options.data, ['blog', 'config', 'labs']),
         checks = {
             tag: function () {
                 return handleTag(self, attrs);
@@ -150,12 +157,12 @@ export function has(params, hash) {
             }
         };
 
-    if (_.isEmpty(attrs)) {
+    if (isEmpty(attrs)) {
         console.warn('warnings.helpers.has.invalidAttribute');
         return;
     }
 
-    return _.some(attrs, function (value, attr) {
+    return some(attrs, function (value, attr) {
         return checks[attr]();
     });
 }
