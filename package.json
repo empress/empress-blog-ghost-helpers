@@ -5,7 +5,7 @@
   "keywords": [
     "ember-addon"
   ],
-  "repository": "",
+  "repository": "https://github.com/empress/empress-blog-ghost-helpers",
   "license": "MIT",
   "author": "",
   "directories": {
